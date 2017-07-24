@@ -4,11 +4,10 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import org.jetbrains.anko.button
+import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
-import org.jetbrains.anko.textView
-import org.jetbrains.anko.verticalLayout
 import java.net.URL
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,18 +34,19 @@ class MainActivity : AppCompatActivity() {
 
     fun displayUI() {
         verticalLayout {
+            val mButton = button {
+                text = "Click me for JSON"
+            }
             val mTextView = textView {
                 hint = "Json will appear here"
             }
-            button {
-                text = "Click me for JSON"
-                onClick { //This supports automatic coroutines (WARNING: EXPERIMENTAL)
 
-                    TODO("Insert appropriate URL")
-                    val jsonText = URL("<SOME API Call>").readText()
-//                    Possibly do some parsing first?
-                    mTextView.text = jsonText
-                }
+            mButton.onClick {
+                longToast("Fetching JSON")
+                TODO("get the correct API call")
+                val jsonText = URL("<API CALL>").readText()
+//                parse text?
+                mTextView.text = "Lorem Ipsum..."
             }
 
         }
