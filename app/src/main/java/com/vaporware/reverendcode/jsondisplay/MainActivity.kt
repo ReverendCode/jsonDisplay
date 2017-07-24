@@ -42,7 +42,8 @@ class MainActivity : AppCompatActivity() {
                 onClick { //This supports automatic coroutines (WARNING: EXPERIMENTAL)
 
                     TODO("Insert URI -> JSON object here.")
-                    mTextView.text = "Call your JSON here."
+                    val jsonObject = someKindOfJsonCall(someURL)
+                    mTextView.text = jsonObject.text
                 }
             }
 
