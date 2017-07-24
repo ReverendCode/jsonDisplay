@@ -43,6 +43,8 @@ class MainActivity : AppCompatActivity() {
             button {
                 text = "Click me for JSON"
                 onClick { //This supports automatic coroutines (WARNING: EXPERIMENTAL)
+
+                    TODO("Insert URI -> JSON object here.")
                     mTextView.text = "Call your JSON here."
                 }
             }
