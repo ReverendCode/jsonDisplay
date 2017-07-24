@@ -1,12 +1,9 @@
 package com.vaporware.reverendcode.jsondisplay
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-
-import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.button
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.textView
