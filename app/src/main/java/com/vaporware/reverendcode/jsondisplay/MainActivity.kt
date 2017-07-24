@@ -48,11 +48,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             mButton.onClick {
-
-//                toast("Attempting to fetch")
+                longToast("Fetching MOTD")
                 async(UI) {
                     val data: Deferred<String> = bg {
-//                        for some reason, this call is not returning anything..
                         URL("https://newt.nersc.gov/newt/status/motd").openConnection().getInputStream().bufferedReader().readText()
 
                     }
