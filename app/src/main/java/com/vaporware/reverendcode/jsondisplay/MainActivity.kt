@@ -8,6 +8,7 @@ import org.jetbrains.anko.button
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.textView
 import org.jetbrains.anko.verticalLayout
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
@@ -41,9 +42,10 @@ class MainActivity : AppCompatActivity() {
                 text = "Click me for JSON"
                 onClick { //This supports automatic coroutines (WARNING: EXPERIMENTAL)
 
-                    TODO("Insert URI -> JSON object here.")
-                    val jsonObject = someKindOfJsonCall(someURL)
-                    mTextView.text = jsonObject.text
+                    TODO("Insert appropriate URL")
+                    val jsonText = URL("<SOME API Call>").readText()
+//                    Possibly do some parsing first?
+                    mTextView.text = jsonText
                 }
             }
 
