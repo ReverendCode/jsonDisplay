@@ -4,7 +4,13 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
+import org.jetbrains.anko.coroutines.experimental.bg
+import org.jetbrains.anko.custom.async
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import java.net.URL
 
@@ -42,13 +48,17 @@ class MainActivity : AppCompatActivity() {
             }
 
             mButton.onClick {
-                longToast("Fetching JSON")
-                TODO("get the correct API call")
-                val jsonText = URL("<API CALL>").readText()
-//                parse text?
-                mTextView.text = "Lorem Ipsum..."
-            }
 
+//                toast("Attempting to fetch")
+                async(UI) {
+                    val data: Deferred<String> = bg {
+//                        for some reason, this call is not returning anything..
+                        URL("https://newt.nersc.gov/newt/status/motd").openConnection().getInputStream().bufferedReader().readText()
+
+                    }
+                mTextView.text = data.await()
+                }
+            }
         }
     }
 }
