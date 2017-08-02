@@ -4,14 +4,17 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
 import org.jetbrains.anko.coroutines.experimental.bg
-import org.jetbrains.anko.custom.async
 import org.jetbrains.anko.sdk25.coroutines.onClick
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
 import java.net.URL
 
 
@@ -41,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     fun displayUI() {
         verticalLayout {
             val mButton = button {
-                text = "Click me for JSON"
+                text = "Click me for MOTD"
             }
             val mTextView = textView {
                 hint = "Json will appear here"
@@ -49,9 +52,26 @@ class MainActivity : AppCompatActivity() {
 
             mButton.onClick {
                 longToast("Fetching MOTD")
+//                Check UserPrefs for user/password combo
+//                Prompt user for user/pass if not found
+                val user = "user"
+                val pass = "password"
+                val data = "username=$user&password=$pass"
                 async(UI) {
                     val data: Deferred<String> = bg {
-                        URL("https://newt.nersc.gov/newt/status/motd").openConnection().getInputStream().bufferedReader().readText()
+//                        send the post request
+                        val foo = URL("https://newt.nersc.gov/newt/status/motd").openConnection() as HttpURLConnection
+                        foo.doOutput = true
+                        foo.requestMethod = "POST"
+                        val os = foo.outputStream as OutputStreamWriter
+                        os.write(data)
+                        os.flush()
+
+//                        catch the response, and display it.
+                        var line: String? = null
+                        val reader = BufferedReader(InputStreamReader(foo.inputStream))
+                        while (line = )
+
 
                     }
                 mTextView.text = data.await()
