@@ -36,6 +36,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun displayUI() {
+
+        val base_url_test_val = "http://androidexample.com"
+        val posts_get_test = "/media/webservice/httppost.php"
+        val apiBaseUrl = "https://newt.nersc.gov/newt"
+        val apiMotd = "/status/motd"
+
         verticalLayout {
             val loginButton = button {
                 text = "Login[DEBUG]"
@@ -48,22 +54,20 @@ class MainActivity : AppCompatActivity() {
             }
             motdButton.onClick {
                 longToast("Fetching MOTD")
-
-                val base_url_test_val = "https://jsonplaceholder.typicode.com"
-                val posts_get_test = "/posts/1"
-
-                val apiBaseUrl = "https://newt.nersc.gov/newt"
-                val apiMotd = "/status/motd"
-
-                val api = ApiManager(base_url_test_val)
-                async(UI) {
-                    mTextView.text = api.get(posts_get_test).await()
-                    toast("the await has returned")
+                ApiManager(apiBaseUrl).let {
+                    mTextView.text = it.get(apiMotd).await()
                 }
-
-                }
+            }
             loginButton.onClick {
                 longToast("Attempting Post")
+
+                ApiManager(base_url_test_val).let {
+                    mTextView.text = it.post(posts_get_test, hashMapOf(
+                            "name" to "jim",
+                            "email" to "a@b.com",
+                            "user" to "jeb",
+                            "pass" to "complexPassword")).await()
+                }
             }
         }
     }
