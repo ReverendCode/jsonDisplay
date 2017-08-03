@@ -12,7 +12,9 @@ import java.net.URL
 class ApiManager (val base_url: String) {
 
     fun get(location: String): Deferred<String> {
-            return bg { URL("$base_url/$location").openConnection().getInputStream().bufferedReader().readText() }
+        if (location.first() == '/') { //I don't feel like being clever right now (2Aug17)
+            return bg { URL("$base_url$location").openConnection().getInputStream().bufferedReader().readText() }
+        } else return bg { URL("$base_url/$location").openConnection().getInputStream().bufferedReader().readText() }
     }
 
     fun post(location: String, data: HashMap<String,String>): Deferred<String> {

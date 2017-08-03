@@ -4,7 +4,10 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
+import org.jetbrains.anko.custom.async
 import org.jetbrains.anko.sdk25.coroutines.onClick
 
 
@@ -41,12 +44,23 @@ class MainActivity : AppCompatActivity() {
                 text = "Click me for MOTD"
             }
             val mTextView = textView {
-                hint = "Json will appear here"
+                text = "Json will appear here"
             }
             motdButton.onClick {
                 longToast("Fetching MOTD")
-                val api = ApiManager("https://newt.nersc.gov/newt")
-                mTextView.text = api.get("/status/motd").await()
+
+                val base_url_test_val = "https://jsonplaceholder.typicode.com"
+                val posts_get_test = "/posts/1"
+
+                val apiBaseUrl = "https://newt.nersc.gov/newt"
+                val apiMotd = "/status/motd"
+
+                val api = ApiManager(base_url_test_val)
+                async(UI) {
+                    mTextView.text = api.get(posts_get_test).await()
+                    toast("the await has returned")
+                }
+
                 }
             loginButton.onClick {
                 longToast("Attempting Post")
