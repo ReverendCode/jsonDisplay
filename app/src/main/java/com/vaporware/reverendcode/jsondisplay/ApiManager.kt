@@ -15,25 +15,22 @@ import java.io.OutputStreamWriter
 class ApiManager (val base_url: String) {
 
     fun get(location: String): Deferred<String> {
-        if (location.first() == '/') { //I don't feel like being clever right now (2Aug17)
-            return bg { URL("$base_url$location").openConnection().getInputStream().bufferedReader().readText() }
-        } else return bg { URL("$base_url/$location").openConnection().getInputStream().bufferedReader().readText() }
+        return bg { URL("$base_url$location").openConnection().getInputStream().bufferedReader().readText() }
     }
 
     fun post(location: String, data: HashMap<String,String>): Deferred<String> {
-//        first pass. this syntax is probably wrong.
-
         var words = ""
         for ( (key, value) in data) {
-            words += URLEncoder.encode(key,"UTF-8") + "=" + URLEncoder.encode(value, "UTF-8") + "&"
+            words += "${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}&"
         }
         return bg {
             // Send POST data request
             val conn = URL(base_url+location).openConnection()
             conn.doOutput = true
-            val wr = OutputStreamWriter(conn.getOutputStream())
-            wr.write(words)
-            wr.flush()
+            with(OutputStreamWriter(conn.getOutputStream())) {
+                write(words)
+                flush()
+            }
             conn.getInputStream().bufferedReader().readText()
         }
     }

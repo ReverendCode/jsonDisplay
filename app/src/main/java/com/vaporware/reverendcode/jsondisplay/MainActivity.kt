@@ -4,16 +4,54 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
 
 
 
 class MainActivity : AppCompatActivity() {
-
+    val apiBaseUrl = "https://newt.nersc.gov/newt"
+    val apiMotd = "/status/motd"
+    val apiLogin = "/login"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        /**
+         * This is where we need to check UserPrefs for the existence of user/pass
+         * login automagically if we already have it, and prompt for login info if not.
+         * */
+
+        val prefs = this.getSharedPreferences("com.vaporware.reverendcode.jsondisplay.prefs",0)
+            alert("Please enter your username and password") {
+                customView {
+                    verticalLayout {
+                        val user = editText {
+                            hint = "Username"
+                        }
+                        val pass = editText {
+                            hint = "Password"
+                        }
+                        positiveButton("Submit") {
+                            prefs.edit().putString("USER", user.text.toString()).apply()
+                            prefs.edit().putString("PASS", pass.text.toString()).apply()
+                            prefs.edit().putBoolean("HAS_USER",true).apply()
+                            ApiManager(apiBaseUrl).let {
+                                val attempt = it.post(apiLogin, hashMapOf(
+                                        "username" to prefs.getString("USER","no"),
+                                        "password" to prefs.getString("PASS", "stop")
+                                ))
+                                async(kotlinx.coroutines.experimental.android.UI) {
+                                    toast(attempt.await())
+                                }
+                            }
+                        }
+                    }
+                }
+            }.show()
+
         displayUI()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -34,10 +72,8 @@ class MainActivity : AppCompatActivity() {
 
     fun displayUI() {
 
-        val base_url_test_val = "http://androidexample.com"
-        val posts_get_test = "/media/webservice/httppost.php"
-        val apiBaseUrl = "https://newt.nersc.gov/newt"
-        val apiMotd = "/status/motd"
+
+
 
         verticalLayout {
             val loginButton = button {
@@ -47,8 +83,9 @@ class MainActivity : AppCompatActivity() {
                 text = "Click me for MOTD"
             }
             val mTextView = textView {
-                text = "Json will appear here"
+                hint = "Json will appear here"
             }
+
             motdButton.onClick {
                 longToast("Fetching MOTD")
                 ApiManager(apiBaseUrl).let {
@@ -57,12 +94,14 @@ class MainActivity : AppCompatActivity() {
             }
             loginButton.onClick {
                 longToast("Attempting Post")
-                ApiManager(base_url_test_val).let {
-                    mTextView.text = it.post(posts_get_test, hashMapOf(
-                            "name" to "jim",
-                            "email" to "a@b.com",
-                            "user" to "jeb",
-                            "pass" to "complexPassword")).await()
+                mTextView.isVerticalScrollBarEnabled = true
+                ApiManager("http://jsonplaceholder.typicode.com").let {
+
+                    mTextView.text = it.post("/posts", hashMapOf(
+                            "title" to "jim",
+                            "body" to "a@b.com",
+                            "userId" to "1"
+                            )).await()
                 }
             }
         }
