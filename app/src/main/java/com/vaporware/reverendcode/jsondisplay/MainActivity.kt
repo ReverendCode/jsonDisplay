@@ -4,10 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
-import org.jetbrains.anko.custom.async
 import org.jetbrains.anko.sdk25.coroutines.onClick
 
 
@@ -60,7 +57,6 @@ class MainActivity : AppCompatActivity() {
             }
             loginButton.onClick {
                 longToast("Attempting Post")
-
                 ApiManager(base_url_test_val).let {
                     mTextView.text = it.post(posts_get_test, hashMapOf(
                             "name" to "jim",
