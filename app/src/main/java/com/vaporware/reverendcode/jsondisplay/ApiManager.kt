@@ -14,6 +14,8 @@ import java.io.OutputStreamWriter
 
 class ApiManager (val base_url: String) {
 
+
+
     fun get(location: String): Deferred<String> {
         return bg { URL("$base_url$location").openConnection().getInputStream().bufferedReader().readText() }
     }

@@ -2,8 +2,13 @@ package com.vaporware.reverendcode.jsondisplay
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Parser
+import com.beust.klaxon.boolean
+import com.beust.klaxon.string
 import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
@@ -13,44 +18,10 @@ import org.jetbrains.anko.sdk25.coroutines.onClick
 class MainActivity : AppCompatActivity() {
     val apiBaseUrl = "https://newt.nersc.gov/newt"
     val apiMotd = "/status/motd"
-    val apiLogin = "/login"
+    val apiLogin = "/login/"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        /**
-         * This is where we need to check UserPrefs for the existence of user/pass
-         * login automagically if we already have it, and prompt for login info if not.
-         * */
-
-        val prefs = this.getSharedPreferences("com.vaporware.reverendcode.jsondisplay.prefs",0)
-            alert("Please enter your username and password") {
-                customView {
-                    verticalLayout {
-                        val user = editText {
-                            hint = "Username"
-                        }
-                        val pass = editText {
-                            hint = "Password"
-                        }
-                        positiveButton("Submit") {
-                            prefs.edit().putString("USER", user.text.toString()).apply()
-                            prefs.edit().putString("PASS", pass.text.toString()).apply()
-                            prefs.edit().putBoolean("HAS_USER",true).apply()
-                            ApiManager(apiBaseUrl).let {
-                                val attempt = it.post(apiLogin, hashMapOf(
-                                        "username" to prefs.getString("USER","no"),
-                                        "password" to prefs.getString("PASS", "stop")
-                                ))
-                                async(kotlinx.coroutines.experimental.android.UI) {
-                                    toast(attempt.await())
-                                }
-                            }
-                        }
-                    }
-                }
-            }.show()
-
-        displayUI()
+        loginUI()
 
     }
 
@@ -70,11 +41,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun displayUI() {
+    private fun loginUI() {
+        val prefs = getSharedPreferences("com.vaporware.reverendcode.jsondisplay.prefs",0)
+        verticalLayout {
+            val name = editText {
+                hint = "Username"
+            }
+            val pass = editText {
+                hint = "Password"
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
+            val keepPass = checkBox("Save Password") {
+                isChecked = (prefs.getString("PASS","") != "")
+            }
+            button {
+                text = "Login"
+                onClick {
+                    prefs.edit().putString("USER", name.text.toString())
+                                .putString("PASS",
+                                    if (keepPass.isChecked) pass.text.toString() else "").apply()
 
+                    ApiManager("https://newt.nersc.gov/newt").let {
+                        val attempt = it.post("/login/", hashMapOf(
+                                "username" to name.text.toString(),
+                                "password" to pass.text.toString()
+                        ))
+                        toast("Logging in, please wait..")
+                        val resultJson = Parser().parse(attempt.await()) as JsonObject
+                        if (resultJson.boolean("auth") ?: false) {
+                            toast("Welcome, ${resultJson.string("username")}, Login successful!")
+                            TODO("display logged in page")
+                        } else {
+                            toast("Login failed, please reenter username/password")
+                            pass.setText("")
+                        }
+                    }
 
+                }
+            }
+        }
+    }
 
-
+    private fun displayUI() {
         verticalLayout {
             val loginButton = button {
                 text = "Login[DEBUG]"
@@ -96,7 +104,6 @@ class MainActivity : AppCompatActivity() {
                 longToast("Attempting Post")
                 mTextView.isVerticalScrollBarEnabled = true
                 ApiManager("http://jsonplaceholder.typicode.com").let {
-
                     mTextView.text = it.post("/posts", hashMapOf(
                             "title" to "jim",
                             "body" to "a@b.com",
