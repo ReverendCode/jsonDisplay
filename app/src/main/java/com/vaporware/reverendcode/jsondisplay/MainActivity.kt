@@ -1,14 +1,17 @@
 package com.vaporware.reverendcode.jsondisplay
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.InputType
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import com.beust.klaxon.boolean
 import com.beust.klaxon.string
+import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
@@ -66,17 +69,19 @@ class MainActivity : AppCompatActivity() {
                                 "username" to name.text.toString(),
                                 "password" to pass.text.toString()
                         ))
-                        toast("Logging in, please wait..")
-                        val resultJson = Parser().parse(attempt.await()) as JsonObject
-                        if (resultJson.boolean("auth") ?: false) {
-                            toast("Welcome, ${resultJson.string("username")}, Login successful!")
-                            TODO("display logged in page")
-                        } else {
-                            toast("Login failed, please reenter username/password")
-                            pass.setText("")
+                        async(UI) {
+                            toast("Logging in, please wait..")
+                            val resultJson = Parser().parse(attempt.await()) as JsonObject
+                            Log.d("Main",resultJson.toString())
+                            if (resultJson.boolean("auth") ?: false) {
+                                toast("Welcome, ${resultJson.string("username")}, Login successful!")
+                                startActivity<StatusActivity>("base_url" to "https://newt.nersc.gov/newt")
+                            } else {
+                                toast("Login failed, please try again.")
+                                pass.setText("")
+                            }
                         }
                     }
-
                 }
             }
         }
