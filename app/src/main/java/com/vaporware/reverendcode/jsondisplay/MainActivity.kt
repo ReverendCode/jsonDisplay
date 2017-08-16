@@ -11,8 +11,6 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import com.beust.klaxon.boolean
 import com.beust.klaxon.string
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
 
@@ -42,6 +40,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
+
     }
 
     private fun loginUI() {

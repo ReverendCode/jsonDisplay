@@ -1,5 +1,9 @@
 package com.vaporware.reverendcode.jsondisplay
+import com.beust.klaxon.JsonArray
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.Parser
 import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.delay
 import org.jetbrains.anko.coroutines.experimental.bg
 import java.net.URL
 import java.net.URLEncoder
@@ -37,4 +41,16 @@ class ApiManager (val base_url: String) {
         }
     }
 
+}
+class NewtManager() {
+    private val base_url = "https://newt.nersc.gov/newt"
+    private val mApiManager = ApiManager(base_url)
+
+    suspend fun getMotd(): String {
+        return mApiManager.get("/status/motd").await()
+    }
+
+    suspend fun getStatus(): JsonArray<JsonObject> {
+        return Parser().parse(StringBuilder(mApiManager.get("/status/").await())) as JsonArray<JsonObject>
+    }
 }

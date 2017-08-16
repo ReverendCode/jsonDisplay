@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import android.widget.Toast
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
@@ -18,50 +17,46 @@ import org.jetbrains.anko.sdk25.coroutines.onClick
 import kotlin.properties.Delegates
 
 class StatusActivity: AppCompatActivity() {
-    var ApiBaseUrl by Delegates.notNull<String>()
+    val ApiBaseUrl = "https://newt.nersc.gov/newt"
     var mAdapter by Delegates.notNull<NewtAdapter>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ApiBaseUrl = intent.extras.getString("base_url")
         mAdapter = NewtAdapter(this)
         async(UI) {
-            val manager = ApiManager(ApiBaseUrl).get("/status/")
-            Log.d("async", "retrieving data")
-            val data = StringBuilder(manager.await())
-            val parsedList: JsonArray<JsonObject> = Parser().parse(data) as JsonArray<JsonObject>
-            Log.d("async", "Parsing complete: $parsedList")
-            mAdapter.update(parsedList)
-
+            mAdapter.update(NewtManager().getStatus())
         }
         statusUI()
     }
 
-
     private fun statusUI() {
+
         verticalLayout {
-            val motdButton = button {
+            button {
                 text = "Click for MOTD"
+                onClick {
+                    alert(NewtManager().getMotd()) {
+                        okButton {  }
+                    }.show()
+                }
             }
-            val textField = textView {
-                hint = "information goes here"
+            button {
+                text = "Refresh status"
+                onClick {
+                    toast("Refreshing status...")
+                    mAdapter.update(NewtManager().getStatus())
+                }
             }
             listView {
                 adapter = mAdapter
             }
-            motdButton.onClick {
-                ApiManager(ApiBaseUrl).let {
-                    val attempt = it.get("/status/motd/")
-                    textField.text = attempt.await()
-                }
-            }
-
         }
     }
 }
 
+
 class NewtAdapter(val activity: StatusActivity) : BaseAdapter() {
-    var SystemsList = mutableListOf<Newts>()
+    private var SystemsList = mutableListOf<Newts>()
 
     override fun getItem(position: Int): Newts = SystemsList[position]
 
@@ -78,7 +73,7 @@ class NewtAdapter(val activity: StatusActivity) : BaseAdapter() {
                 i++) }
 
         notifyDataSetChanged()
-        Log.d("Home", SystemsList.toString())
+        Log.d("Update", SystemsList.toString())
     }
 
     override fun getView(i: Int, v: View?, parent: ViewGroup?): View {
@@ -90,8 +85,8 @@ class NewtAdapter(val activity: StatusActivity) : BaseAdapter() {
                 }
                 lparams(width = matchParent, height = wrapContent)
                 padding = dip(10)
-                textView(item.name)
-                textView(item.status)
+                textView(item.name + "     ")
+                textView("Status: " + item.status)
             }
         }
     }
